@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
@@ -52,9 +53,11 @@ public class DisguiseManager {
         revert(player);
 
         MiscDisguise disguise = new MiscDisguise(DisguiseType.FALLING_BLOCK, blockMaterial);
-        DisguiseAPI.disguiseToAll(player, disguise);
+        DisguiseAPI.disguiseIgnorePlayers(player, disguise, player);
         disguisedPlayers.put(player.getUniqueId(), blockMaterial);
         player.sendMessage("§aVocê agora está disfarçado de " + blockMaterial.name() + "!");
+        player.getInventory().addItem(new ItemStack(blockMaterial));
+        startSolidifyTask(player);
     }
 
     public void startSolidifyTask(Player player) {
@@ -131,28 +134,42 @@ public class DisguiseManager {
             BlockState originalState = solidBlocks.remove(player.getUniqueId());
             solidBlockLocations.remove(originalState.getLocation());
             originalState.update(true, false); // Revert to the original block
-            player.setGameMode(plugin.getServer().getDefaultGameMode()); // Set back to default gamemode
+            player.setGameMode(GameMode.ADVENTURE); // Set back to default gamemode
             
             Material disguiseMaterial = disguisedPlayers.get(player.getUniqueId());
             if (disguiseMaterial != null) {
                 MiscDisguise disguise = new MiscDisguise(DisguiseType.FALLING_BLOCK, disguiseMaterial);
-                DisguiseAPI.disguiseToAll(player, disguise);
+                DisguiseAPI.disguiseIgnorePlayers(player, disguise, player);
             }
         }
     }
 
     public void revert(Player player) {
+        Material disguiseMaterial = disguisedPlayers.get(player.getUniqueId());
+        if (disguiseMaterial != null) {
+            player.getInventory().removeItem(new ItemStack(disguiseMaterial));
+        }
+
         cancelSolidifyTask(player);
 
         if (isSolid(player)) {
             BlockState originalState = solidBlocks.remove(player.getUniqueId());
             solidBlockLocations.remove(originalState.getLocation());
             originalState.update(true, false); // Revert to the original block
-            player.setGameMode(plugin.getServer().getDefaultGameMode()); // Set back to default gamemode
+            player.setGameMode(GameMode.ADVENTURE); // Set back to default gamemode
         }
         DisguiseAPI.undisguiseToAll(player);
         disguisedPlayers.remove(player.getUniqueId());
         player.sendMessage("§eVocê não está mais disfarçado.");
+    }
+
+    public void ResetAll() {
+        for (UUID playerId : solidBlocks.keySet()) {
+            Player player = plugin.getServer().getPlayer(playerId);
+            if (player != null) {
+                revert(player);
+            }
+        }
     }
 
     public void cleanup(Player player) {

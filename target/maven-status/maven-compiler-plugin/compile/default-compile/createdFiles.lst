@@ -1,5 +1,6 @@
 com\igor\blockhunt\BlockBreakListener.class
 com\igor\blockhunt\PlayerDamageListener.class
+com\igor\blockhunt\restartCommand.class
 com\igor\blockhunt\PlayerMoveListener.class
 com\igor\blockhunt\InventoryClickListener.class
 com\igor\blockhunt\PlayerInteractListener.class
