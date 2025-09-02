@@ -1,5 +1,6 @@
 package com.igor.blockhunt;
 
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,6 +28,7 @@ public class PlayerDamageListener implements Listener {
                 if (event.getDamager() instanceof Player) {
                     Player attacker = (Player) event.getDamager();
                     attacker.sendMessage("§eVocê revelou um jogador disfarçado!");
+                    attacker.playSound(attacker.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 1.0f);
                 }
             }
         }
