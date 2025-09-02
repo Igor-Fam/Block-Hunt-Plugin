@@ -149,16 +149,10 @@ public class DisguiseManager {
             solidBlockLocations.remove(originalState.getLocation());
             originalState.update(true, false); // Revert to the original block
             player.setGameMode(plugin.getServer().getDefaultGameMode()); // Set back to default gamemode
-            DisguiseAPI.undisguiseToAll(player);
-            disguisedPlayers.remove(player.getUniqueId());
-            player.sendMessage("§eVocê não está mais disfarçado.");
         }
-
-        if (isDisguised(player)) {
-            DisguiseAPI.undisguiseToAll(player);
-            disguisedPlayers.remove(player.getUniqueId());
-            player.sendMessage("§eVocê não está mais disfarçado.");
-        }
+        DisguiseAPI.undisguiseToAll(player);
+        disguisedPlayers.remove(player.getUniqueId());
+        player.sendMessage("§eVocê não está mais disfarçado.");
     }
 
     public void cleanup(Player player) {
