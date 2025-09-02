@@ -1,0 +1,12 @@
+name: BlockHunt
+version: 1.0.0
+main: com.igor.blockhunt.BlockHuntPlugin
+api-version: '1.21'
+authors: [Igor]
+description: Disguise as a block and become solid when standing still.
+softdepend: [LibsDisguises]
+
+commands:
+  blockhunt:
+    description: Main command for BlockHunt plugin.
+    aliases: [bh]

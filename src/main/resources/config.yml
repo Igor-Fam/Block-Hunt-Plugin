@@ -1,0 +1,34 @@
+# Configuration for BlockHunt Plugin
+
+# The item that players right-click to open the disguise menu.
+# A list of all materials can be found here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+wand-item: BLAZE_ROD
+
+# The name of the wand item.
+wand-name: "&6Block Hunt Wand"
+
+# Lore (description) for the wand item.
+wand-lore:
+  - "&7Right-click to choose a block to disguise as."
+
+# How many seconds a player must stand still to become a solid block.
+solidify-delay-seconds: 5
+
+# List of blocks players can disguise as.
+# You can add any block material from the Spigot Javadocs list.
+allowed-blocks:
+  - "GRASS_BLOCK"
+  - "DIRT"
+  - "STONE"
+  - "OAK_LOG"
+  - "OAK_LEAVES"
+  - "CRAFTING_TABLE"
+  - "FURNACE"
+  - "HAY_BLOCK"
+  - "MELON"
+  - "PUMPKIN"
+  - "BOOKSHELF"
+  - "BRICKS"
+  - "TNT"
+  - "DIAMOND_BLOCK"
+  - "IRON_BLOCK"
