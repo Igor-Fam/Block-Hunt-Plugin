@@ -28,6 +28,7 @@ public class PlayerMoveListener implements Listener {
         if(player.getGameMode() == org.bukkit.GameMode.SPECTATOR) {
             if(from.getBlockY() != to.getBlockY()) {
                 event.setCancelled(true);
+                return;
             }  
         }
 

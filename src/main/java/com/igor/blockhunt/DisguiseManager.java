@@ -13,6 +13,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.Orientable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -98,20 +99,27 @@ public class DisguiseManager {
         solidBlockLocations.put(blockLocation, player.getUniqueId());
 
         // Place the new block
-        blockLocation.getBlock().setType(disguisedPlayers.get(player.getUniqueId()));
-
-        /*
         Block block = blockLocation.getBlock();
         block.setType(disguisedPlayers.get(player.getUniqueId()));
-        BlockData data = block.getBlockData();
-        if (data instanceof Directional) {
-            ((Directional) data).setFacing(player.getFacing());
-            block.setBlockData(data);
-        }
-        */
+        BlockData bd = block.getBlockData();
+        if(bd instanceof Directional) {
+            plugin.getLogger().info("Directional block detected: " + block.getType());
+            plugin.getLogger().info("Player facing: " + player.getFacing());
+            plugin.getLogger().info("Block facing before: " + ((Directional) bd).getFacing());
 
+            ((Directional) bd).setFacing(player.getFacing());
+            block.setBlockData(bd, false);
+            plugin.getLogger().info("Block facing after: " + ((Directional) bd).getFacing());
+        }
+        
         // Make player invisible and invulnerable
-        player.setGameMode(GameMode.SPECTATOR);
+        //player.setGameMode(GameMode.SPECTATOR);
+        player.setInvulnerable(true);
+        player.setInvisible(true);
+        player.setCollidable(false);
+
+        // Remove disguise
+        DisguiseAPI.undisguiseToAll(player);
 
         player.sendMessage("§2Você virou um bloco! §aFique parado para não ser descoberto.");
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
