@@ -20,8 +20,7 @@ public class ConfigGUI {
     public void open(Player player) {
         List<Material> blocks = plugin.getSelectableBlocks();
         // Create an inventory with enough space (multiples of 9, max 54)
-        int size = (int) Math.ceil(blocks.size() / 9.0) * 9;
-        size = Math.max(9, Math.min(54, size));
+        int size = 9*3;
         Inventory gui = Bukkit.createInventory(null, size, GUI_TITLE);
 
         for (Material block : blocks) {

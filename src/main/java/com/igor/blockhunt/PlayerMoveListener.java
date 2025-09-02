@@ -38,7 +38,7 @@ public class PlayerMoveListener implements Listener {
             disguiseManager.cancelSolidifyTask(player);
             disguiseManager.startSolidifyTask(player);
             if(disguiseManager.isSolid(player)){
-                disguiseManager.revert(player);
+                disguiseManager.Liquify(player);
             }
         }
     }

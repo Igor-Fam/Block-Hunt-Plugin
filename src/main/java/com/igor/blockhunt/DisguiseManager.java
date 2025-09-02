@@ -1,6 +1,7 @@
 package com.igor.blockhunt;
 
 import me.libraryaddict.disguise.DisguiseAPI;
+import me.libraryaddict.disguise.disguisetypes.Disguise;
 import me.libraryaddict.disguise.disguisetypes.DisguiseType;
 import me.libraryaddict.disguise.disguisetypes.MiscDisguise;
 import org.bukkit.GameMode;
@@ -54,13 +55,14 @@ public class DisguiseManager {
 
         // Disguise for others, invisible to self
         MiscDisguise disguise = new MiscDisguise(DisguiseType.FALLING_BLOCK, blockMaterial);
-        DisguiseAPI.disguiseIgnorePlayers(player, disguise, player);
+        DisguiseAPI.disguiseToAll(player, disguise);
 
         // Set helmet for self-view
         player.getInventory().setHelmet(new ItemStack(blockMaterial));
 
         disguisedPlayers.put(player.getUniqueId(), blockMaterial);
         player.sendMessage("§aVocê agora está disfarçado de " + blockMaterial.name() + "!");
+        player.getInventory().addItem(new ItemStack(blockMaterial));
         startSolidifyTask(player);
     }
 
@@ -125,7 +127,26 @@ public class DisguiseManager {
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
     }
 
+    public void Liquify(Player player){
+        if (isSolid(player)) {
+            BlockState originalState = solidBlocks.remove(player.getUniqueId());
+            solidBlockLocations.remove(originalState.getLocation());
+            originalState.update(true, false); // Revert to the original block
+            player.setGameMode(GameMode.ADVENTURE); // Set back to default gamemode
+            
+            Material disguiseMaterial = disguisedPlayers.get(player.getUniqueId());
+            if (disguiseMaterial != null) {
+                MiscDisguise disguise = new MiscDisguise(DisguiseType.FALLING_BLOCK, disguiseMaterial);
+                DisguiseAPI.disguiseToAll(player, disguise);
+            }
+        }
+    }
+
     public void revert(Player player) {
+        Material disguiseMaterial = disguisedPlayers.get(player.getUniqueId());
+        if (disguiseMaterial != null) {
+            player.getInventory().removeItem(new ItemStack(disguiseMaterial));
+        }
         cancelSolidifyTask(player);
 
         if (isSolid(player)) {
