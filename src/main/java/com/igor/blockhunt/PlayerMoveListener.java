@@ -25,6 +25,12 @@ public class PlayerMoveListener implements Listener {
         Location from = event.getFrom();
         Location to = event.getTo();
 
+        if(player.getGameMode() == org.bukkit.GameMode.SPECTATOR) {
+            if(from.getBlockY() != to.getBlockY()) {
+                event.setCancelled(true);
+            }  
+        }
+
         // Check if the player has moved a significant distance (i.e., moved a block)
         if (from.getBlockX() != to.getBlockX() || from.getBlockY() != to.getBlockY() || from.getBlockZ() != to.getBlockZ()) {
             // If a disguised (but not solid) player moves, reset their solidify timer.
