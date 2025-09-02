@@ -9,6 +9,9 @@ import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -95,6 +98,16 @@ public class DisguiseManager {
 
         // Place the new block
         blockLocation.getBlock().setType(disguisedPlayers.get(player.getUniqueId()));
+
+        /*
+        Block block = blockLocation.getBlock();
+        block.setType(disguisedPlayers.get(player.getUniqueId()));
+        BlockData data = block.getBlockData();
+        if (data instanceof Directional) {
+            ((Directional) data).setFacing(player.getFacing());
+            block.setBlockData(data);
+        }
+        */
 
         // Make player invisible and invulnerable
         player.setGameMode(GameMode.SPECTATOR);
