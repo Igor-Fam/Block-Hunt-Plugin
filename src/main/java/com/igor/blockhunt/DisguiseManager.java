@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 
@@ -53,7 +54,6 @@ public class DisguiseManager {
 
         // Disguise for others, invisible to self
         MiscDisguise disguise = new MiscDisguise(DisguiseType.FALLING_BLOCK, blockMaterial);
-        disguise.setSendVelocity(true);
         DisguiseAPI.disguiseIgnorePlayers(player, disguise, player);
 
         // Set helmet for self-view

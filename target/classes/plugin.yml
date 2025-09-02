@@ -10,3 +10,11 @@ commands:
   blockhunt:
     description: Main command for BlockHunt plugin.
     aliases: [bh]
+
+permissions:
+  blockhunt.admin:
+    description: Allows resetting all disguises and other admin commands.
+    default: op
+  blockhunt.givewand:
+    description: Allows the user to get the Block Hunt wand.
+    default: op

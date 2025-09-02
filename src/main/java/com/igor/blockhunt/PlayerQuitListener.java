@@ -17,6 +17,6 @@ public class PlayerQuitListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         // Clean up all data associated with the player
-        disguiseManager.cleanup(player);
+        disguiseManager.revert(player);
     }
 }
