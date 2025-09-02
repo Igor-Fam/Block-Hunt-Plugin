@@ -87,17 +87,22 @@ public class DisguiseManager {
         Location loc = player.getLocation().getBlock().getLocation();
         // Snap to grid center
         loc.add(0.5, 0, 0.5);
-        loc.setYaw(0);
-        loc.setPitch(0);
+        // Preserve player's rotation
+        float yaw = player.getLocation().getYaw();
+        float pitch = player.getLocation().getPitch();
+        loc.setYaw(yaw);
+        loc.setPitch(pitch);
 
         player.teleport(loc);
 
         Location blockLocation = loc.getBlock().getLocation();
-
+        
         // Store original block
         solidBlocks.put(player.getUniqueId(), blockLocation.getBlock().getState());
         solidBlockLocations.put(blockLocation, player.getUniqueId());
-
+        
+        // Make player invisible and invulnerable
+        
         // Place the new block
         Block block = blockLocation.getBlock();
         block.setType(disguisedPlayers.get(player.getUniqueId()));
@@ -106,21 +111,17 @@ public class DisguiseManager {
             plugin.getLogger().info("Directional block detected: " + block.getType());
             plugin.getLogger().info("Player facing: " + player.getFacing());
             plugin.getLogger().info("Block facing before: " + ((Directional) bd).getFacing());
-
+            
             ((Directional) bd).setFacing(player.getFacing());
             block.setBlockData(bd, false);
             plugin.getLogger().info("Block facing after: " + ((Directional) bd).getFacing());
         }
         
-        // Make player invisible and invulnerable
-        //player.setGameMode(GameMode.SPECTATOR);
-        player.setInvulnerable(true);
-        player.setInvisible(true);
-        player.setCollidable(false);
-
+        player.setGameMode(GameMode.SPECTATOR);
+        
         // Remove disguise
         DisguiseAPI.undisguiseToAll(player);
-
+        
         player.sendMessage("§2Você virou um bloco! §aFique parado para não ser descoberto.");
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
     }
@@ -131,6 +132,12 @@ public class DisguiseManager {
             solidBlockLocations.remove(originalState.getLocation());
             originalState.update(true, false); // Revert to the original block
             player.setGameMode(plugin.getServer().getDefaultGameMode()); // Set back to default gamemode
+            
+            Material disguiseMaterial = disguisedPlayers.get(player.getUniqueId());
+            if (disguiseMaterial != null) {
+                MiscDisguise disguise = new MiscDisguise(DisguiseType.FALLING_BLOCK, disguiseMaterial);
+                DisguiseAPI.disguiseToAll(player, disguise);
+            }
         }
     }
 
@@ -142,6 +149,9 @@ public class DisguiseManager {
             solidBlockLocations.remove(originalState.getLocation());
             originalState.update(true, false); // Revert to the original block
             player.setGameMode(plugin.getServer().getDefaultGameMode()); // Set back to default gamemode
+            DisguiseAPI.undisguiseToAll(player);
+            disguisedPlayers.remove(player.getUniqueId());
+            player.sendMessage("§eVocê não está mais disfarçado.");
         }
 
         if (isDisguised(player)) {
