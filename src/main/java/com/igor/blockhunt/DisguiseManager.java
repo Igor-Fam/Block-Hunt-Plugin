@@ -117,6 +117,15 @@ public class DisguiseManager {
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
     }
 
+    public void Liquify(Player player){
+        if (isSolid(player)) {
+            BlockState originalState = solidBlocks.remove(player.getUniqueId());
+            solidBlockLocations.remove(originalState.getLocation());
+            originalState.update(true, false); // Revert to the original block
+            player.setGameMode(plugin.getServer().getDefaultGameMode()); // Set back to default gamemode
+        }
+    }
+
     public void revert(Player player) {
         cancelSolidifyTask(player);
 
