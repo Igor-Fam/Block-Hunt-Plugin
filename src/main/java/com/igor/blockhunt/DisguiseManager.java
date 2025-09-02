@@ -102,6 +102,15 @@ public class DisguiseManager {
         player.sendTitle("§2Você virou um bloco!", "§aFique parado para não ser descoberto.", 10, 70, 20);
     }
 
+    public void Liquify(Player player){
+        if (isSolid(player)) {
+            BlockState originalState = solidBlocks.remove(player.getUniqueId());
+            solidBlockLocations.remove(originalState.getLocation());
+            originalState.update(true, false); // Revert to the original block
+            player.setGameMode(plugin.getServer().getDefaultGameMode()); // Set back to default gamemode
+        }
+    }
+
     public void revert(Player player) {
         cancelSolidifyTask(player);
 

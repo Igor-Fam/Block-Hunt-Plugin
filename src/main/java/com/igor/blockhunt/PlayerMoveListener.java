@@ -18,9 +18,7 @@ public class PlayerMoveListener implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
 
-        // We only care about players who are disguised but not yet solid.
-        // If a player is solid, they are in spectator mode and can move freely.
-        if (!disguiseManager.isDisguised(player) || disguiseManager.isSolid(player)) {
+        if (!disguiseManager.isDisguised(player)) {
             return;
         }
 
@@ -32,6 +30,9 @@ public class PlayerMoveListener implements Listener {
             // If a disguised (but not solid) player moves, reset their solidify timer.
             disguiseManager.cancelSolidifyTask(player);
             disguiseManager.startSolidifyTask(player);
+            if(disguiseManager.isSolid(player)){
+                disguiseManager.Liquify(player);
+            }
         }
     }
 }
