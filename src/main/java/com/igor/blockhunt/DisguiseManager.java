@@ -7,14 +7,13 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Directional;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.block.Block;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.Orientable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,11 +51,16 @@ public class DisguiseManager {
         // Remove any previous disguise or solid state
         revert(player);
 
+        // Disguise for others, invisible to self
         MiscDisguise disguise = new MiscDisguise(DisguiseType.FALLING_BLOCK, blockMaterial);
+        disguise.setSendVelocity(true);
         DisguiseAPI.disguiseIgnorePlayers(player, disguise, player);
+
+        // Set helmet for self-view
+        player.getInventory().setHelmet(new ItemStack(blockMaterial));
+
         disguisedPlayers.put(player.getUniqueId(), blockMaterial);
         player.sendMessage("§aVocê agora está disfarçado de " + blockMaterial.name() + "!");
-        player.getInventory().addItem(new ItemStack(blockMaterial));
         startSolidifyTask(player);
     }
 
@@ -87,92 +91,73 @@ public class DisguiseManager {
             return;
         }
 
+        // Undisguise before turning solid
+        DisguiseAPI.undisguiseToAll(player);
+        player.getInventory().setHelmet(null); // Clear helmet before going into spectator
+
         Location loc = player.getLocation().getBlock().getLocation();
         // Snap to grid center
         loc.add(0.5, 0, 0.5);
-        // Preserve player's rotation
-        float yaw = player.getLocation().getYaw();
-        float pitch = player.getLocation().getPitch();
-        loc.setYaw(yaw);
-        loc.setPitch(pitch);
+        loc.setYaw(player.getLocation().getYaw());
+        loc.setPitch(player.getLocation().getPitch());
 
         player.teleport(loc);
 
         Location blockLocation = loc.getBlock().getLocation();
-        
+
         // Store original block
         solidBlocks.put(player.getUniqueId(), blockLocation.getBlock().getState());
         solidBlockLocations.put(blockLocation, player.getUniqueId());
-        
-        // Make player invisible and invulnerable
-        
+
         // Place the new block
         Block block = blockLocation.getBlock();
         block.setType(disguisedPlayers.get(player.getUniqueId()));
         BlockData bd = block.getBlockData();
-        if(bd instanceof Directional) {
-            plugin.getLogger().info("Directional block detected: " + block.getType());
-            plugin.getLogger().info("Player facing: " + player.getFacing());
-            plugin.getLogger().info("Block facing before: " + ((Directional) bd).getFacing());
-            
+        if (bd instanceof Directional) {
             ((Directional) bd).setFacing(player.getFacing());
             block.setBlockData(bd, false);
-            plugin.getLogger().info("Block facing after: " + ((Directional) bd).getFacing());
         }
-        
+
+        // Make player invisible and invulnerable
         player.setGameMode(GameMode.SPECTATOR);
-        
-        // Remove disguise
-        DisguiseAPI.undisguiseToAll(player);
-        
+
         player.sendMessage("§2Você virou um bloco! §aFique parado para não ser descoberto.");
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
     }
 
-    public void Liquify(Player player){
-        if (isSolid(player)) {
-            BlockState originalState = solidBlocks.remove(player.getUniqueId());
-            solidBlockLocations.remove(originalState.getLocation());
-            originalState.update(true, false); // Revert to the original block
-            player.setGameMode(GameMode.ADVENTURE); // Set back to default gamemode
-            
-            Material disguiseMaterial = disguisedPlayers.get(player.getUniqueId());
-            if (disguiseMaterial != null) {
-                MiscDisguise disguise = new MiscDisguise(DisguiseType.FALLING_BLOCK, disguiseMaterial);
-                DisguiseAPI.disguiseIgnorePlayers(player, disguise, player);
-            }
-        }
-    }
-
     public void revert(Player player) {
-        Material disguiseMaterial = disguisedPlayers.get(player.getUniqueId());
-        if (disguiseMaterial != null) {
-            player.getInventory().removeItem(new ItemStack(disguiseMaterial));
-        }
-
         cancelSolidifyTask(player);
 
         if (isSolid(player)) {
             BlockState originalState = solidBlocks.remove(player.getUniqueId());
             solidBlockLocations.remove(originalState.getLocation());
             originalState.update(true, false); // Revert to the original block
-            player.setGameMode(GameMode.ADVENTURE); // Set back to default gamemode
+            player.setGameMode(plugin.getServer().getDefaultGameMode()); // Set back to default gamemode
         }
-        DisguiseAPI.undisguiseToAll(player);
-        disguisedPlayers.remove(player.getUniqueId());
-        player.sendMessage("§eVocê não está mais disfarçado.");
+
+        // This part handles players who are disguised but not solid
+        if (disguisedPlayers.containsKey(player.getUniqueId())) {
+            DisguiseAPI.undisguiseToAll(player);
+            player.getInventory().setHelmet(null); // Clear helmet
+            disguisedPlayers.remove(player.getUniqueId());
+            player.sendMessage("§eVocê não está mais disfarçado.");
+        }
     }
 
-    public void ResetAll() {
-        for (UUID playerId : solidBlocks.keySet()) {
+    public void resetAll() {
+        // Use a copy of the keySet to prevent ConcurrentModificationException
+        for (UUID playerId : new HashSet<>(disguisedPlayers.keySet())) {
             Player player = plugin.getServer().getPlayer(playerId);
             if (player != null) {
                 revert(player);
             }
         }
-    }
-
-    public void cleanup(Player player) {
-        revert(player);
+        // Also revert any solid players
+        for (UUID playerId : new HashSet<>(solidBlocks.keySet())) {
+            Player player = plugin.getServer().getPlayer(playerId);
+            if (player != null) {
+                revert(player);
+            }
+        }
     }
 }

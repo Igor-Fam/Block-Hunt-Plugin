@@ -44,18 +44,15 @@ public class PlayerInteractListener implements Listener {
     }
 
     private void openBlockSelectionGUI(Player player) {
-        List<String> allowedBlocks = plugin.getConfig().getStringList("allowed-blocks");
-        int inventorySize = (int) (Math.ceil(allowedBlocks.size() / 9.0) * 9);
+        List<Material> selectableBlocks = plugin.getSelectableBlocks();
+        int inventorySize = (int) (Math.ceil(selectableBlocks.size() / 9.0) * 9);
         inventorySize = Math.max(9, Math.min(54, inventorySize)); // Ensure size is between 9 and 54
 
         Inventory gui = Bukkit.createInventory(null, inventorySize, GUI_TITLE);
 
-        for (String blockName : allowedBlocks) {
-            Material blockMaterial = Material.matchMaterial(blockName);
-            if (blockMaterial != null && blockMaterial.isBlock()) {
-                ItemStack blockItem = new ItemStack(blockMaterial);
-                gui.addItem(blockItem);
-            }
+        for (Material blockMaterial : selectableBlocks) {
+            ItemStack blockItem = new ItemStack(blockMaterial);
+            gui.addItem(blockItem);
         }
 
         player.openInventory(gui);
