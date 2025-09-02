@@ -48,6 +48,7 @@ public class DisguiseManager {
         revert(player);
 
         MiscDisguise disguise = new MiscDisguise(DisguiseType.FALLING_BLOCK, blockMaterial);
+        disguise.setSendVelocity(true); // Melhora a fluidez do movimento
         DisguiseAPI.disguiseToAll(player, disguise);
         disguisedPlayers.put(player.getUniqueId(), blockMaterial);
         player.sendMessage("§aVocê agora está disfarçado de " + blockMaterial.name() + "!");
