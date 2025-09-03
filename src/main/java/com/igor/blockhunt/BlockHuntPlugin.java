@@ -60,7 +60,7 @@ public class BlockHuntPlugin extends JavaPlugin {
 
     public List<Material> getSelectableBlocks() {
         List<String> materialNames = getConfig().getStringList("selectable-blocks");
-        if (materialNames == null || materialNames.isEmpty()) {
+        if (materialNames == null) {
             // Provide a default list if the config is empty
             return new ArrayList<>(Arrays.asList(Material.STONE, Material.DIRT, Material.OAK_LOG, Material.CRAFTING_TABLE));
         }

@@ -39,10 +39,12 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         switch (subCommand) {
             case "wand":
                 return handleGiveWand(sender);
-            case "resetall":
+            case "resetdisguise":
                 return handleResetAll(sender);
             case "config":
                 return handleConfig(sender, args);
+            case "resetconfig":
+                return handleResetConfig(sender);
             default:
                 sender.sendMessage("§cComando desconhecido. Uso: /" + label + " <wand|resetall|config>");
                 return false;
@@ -116,6 +118,20 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    private boolean handleResetConfig(CommandSender sender) {
+        if (!sender.hasPermission("blockhunt.admin")) {
+            sender.sendMessage("§cVocê não tem permissão para usar este comando.");
+            return true;
+        }
+
+        List<Material> defaultBlocks = Arrays.asList(
+        );
+
+        plugin.saveSelectableBlocks(defaultBlocks);
+        sender.sendMessage("§aConfiguração de blocos restaurada para o padrão.");
+        return true;
+    }
+
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
@@ -124,8 +140,9 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 subcommands.add("wand");
             }
             if (sender.hasPermission("blockhunt.admin")) {
-                subcommands.add("resetall");
+                subcommands.add("resetdisguise");
                 subcommands.add("config");
+                subcommands.add("resetconfig");
             }
             return subcommands;
         } else if (args.length == 2 && args[0].equalsIgnoreCase("config")) {
