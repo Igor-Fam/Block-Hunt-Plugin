@@ -29,8 +29,17 @@ public class DisguiseManager {
     private final Map<UUID, BlockState> solidBlocks = new HashMap<>();
     private final Map<Location, UUID> solidBlockLocations = new HashMap<>();
 
+    private Minigame minigame;
+
+    private static DisguiseManager instance;
+
     public DisguiseManager(BlockHuntPlugin plugin) {
         this.plugin = plugin;
+        instance = this;
+    }
+
+    public static DisguiseManager getInstance() {
+        return instance;
     }
 
     public boolean isDisguised(Player player) {
@@ -181,4 +190,13 @@ public class DisguiseManager {
             }
         }
     }
+
+    public void setMinigame(Minigame minigame) {
+        this.minigame = minigame;
+    }
+
+    public Minigame getMinigame() {
+        return minigame;
+    }
+
 }

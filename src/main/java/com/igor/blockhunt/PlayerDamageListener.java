@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 
 public class PlayerDamageListener implements Listener {
 
@@ -32,5 +33,21 @@ public class PlayerDamageListener implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void onEntityDeath(EntityDeathEvent event){
+        if(event.getEntity() instanceof Player){
+            //Imprime debug
+            Player deadPlayer = (Player) event.getEntity();
+            if(disguiseManager.isDisguised(deadPlayer)){
+                disguiseManager.revert(deadPlayer);
+            }
+            Minigame minigame = disguiseManager.getMinigame();
+            if(minigame != null){
+                minigame.playerDeath(deadPlayer);
+            }
+        }
+
     }
 }

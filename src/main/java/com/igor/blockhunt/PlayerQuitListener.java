@@ -18,5 +18,7 @@ public class PlayerQuitListener implements Listener {
         Player player = event.getPlayer();
         // Clean up all data associated with the player
         disguiseManager.revert(player);
+        Minigame minigame = disguiseManager.getMinigame();
+        if (minigame != null) disguiseManager.getMinigame().PlayerExit(player);
     }
 }

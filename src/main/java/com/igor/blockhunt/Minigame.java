@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Team;
 
+import me.libraryaddict.disguise.disguisetypes.Disguise;
 import net.kyori.adventure.key.Keyed;
 
 import org.bukkit.scoreboard.Score;
@@ -31,7 +32,7 @@ public class Minigame {
     
     Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 
-    private final Location spawnEscondedor = new Location(Bukkit.getWorld("world"), 219.0, 73, -580.0);
+    private final Location spawnEscondedor = new Location(Bukkit.getWorld("world"), 219.0, 73, -584.0);
     private final Location localEsperaProcurador = new Location(Bukkit.getWorld("world"), 223.5, 77, -484.5);
 
     private final int tempoEsperaProcurador = 35;
@@ -39,9 +40,12 @@ public class Minigame {
 
     BossBar bossBarAtiva;
 
+    int taskId;
+
     Minigame(MainCommand mainCommand, BlockHuntPlugin plugin) {
         this.mainCommand = mainCommand;
         this.plugin = plugin;
+        DisguiseManager.getInstance().setMinigame(this);
     }
 
     public void start() {
@@ -114,14 +118,13 @@ public class Minigame {
             bossbar.addPlayer(p);
         }
         final int[] tempoRestante = {tempoEsperaProcurador};
-        final int[] taskId = new int[1];
-        taskId[0] = Bukkit.getScheduler().runTaskTimer(
+        taskId = Bukkit.getScheduler().runTaskTimer(
             plugin, 
             () -> {
                 if (tempoRestante[0] <= 0) {
                     bossbar.removeAll();
                     bossbar.setVisible(false);
-                    Bukkit.getScheduler().cancelTask(taskId[0]);
+                    Bukkit.getScheduler().cancelTask(taskId);
                     for(Player p : procuradores) {
                         p.teleport(spawnEscondedor);
                     }
@@ -145,14 +148,14 @@ public class Minigame {
             bossbar.addPlayer(p);
         }
         final int[] tempoRestante = {tempoMinigame};
-        final int[] taskId = new int[1];
-        taskId[0] = Bukkit.getScheduler().runTaskTimer(
+        taskId = Bukkit.getScheduler().runTaskTimer(
             plugin, 
             () -> {
                 if (tempoRestante[0] <= 0) {
                     bossbar.removeAll();
                     bossbar.setVisible(false);
-                    Bukkit.getScheduler().cancelTask(taskId[0]);
+                    Bukkit.getScheduler().cancelTask(taskId);
+                    EndGame();
                     return;
                 } else {
                     bossbar.setTitle("Tempo restante");
@@ -168,10 +171,52 @@ public class Minigame {
         bossBarAtiva.setVisible(false);
         escondedores.clear();
         procuradores.clear();
-        List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
-        for(Player p : onlinePlayers){
-            p.setGameMode(GameMode.SPECTATOR);
+        DisguiseManager.getInstance().setMinigame(null);
+
+        if(Bukkit.getScheduler().isCurrentlyRunning(taskId) || Bukkit.getScheduler().isQueued(taskId)) {
+            Bukkit.getScheduler().cancelTask(taskId);
         }
+    }
+
+    public void playerDeath(Player p){
+        if(escondedores.contains(p)){
+            escondedores.remove(p);
+            procuradores.add(p);
+            scoreboard.getTeam("EscondedoresBH").removeEntry(p.getName());
+            scoreboard.getTeam("Procuradores").addEntry(p.getName());
+            p.sendMessage("Você morreu e agora é um Procurador!");
+            giveArmor(p);
+            p.teleport(spawnEscondedor);
+            p.setGameMode(GameMode.ADVENTURE);
+        }
+        checkEndGame();
+    }
+
+    public void checkEndGame(){
+        if(escondedores.isEmpty()){
+            EndGame();
+        }
+    }
+
+    private void EndGame(){
+        for(Player p : Bukkit.getOnlinePlayers()) {
+            p.sendTitle("§cO jogo acabou!", "§eObrigado por jogar Block Hunt!", 10, 70, 20);
+            scoreboard.getTeam("EscondedoresBH").removeEntry(p.getName());
+            scoreboard.getTeam("Procuradores").removeEntry(p.getName());
+        }
+        
+        stopMinigame();
+    }
+
+    public void PlayerExit(Player p){
+        if(escondedores.contains(p)){
+            escondedores.remove(p);
+            scoreboard.getTeam("EscondedoresBH").removeEntry(p.getName());
+        } else if(procuradores.contains(p)){
+            procuradores.remove(p);
+            scoreboard.getTeam("Procuradores").removeEntry(p.getName());
+        }
+        checkEndGame();
     }
 
     public Set<Player> getEscondedores() {
