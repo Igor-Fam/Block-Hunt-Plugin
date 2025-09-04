@@ -21,6 +21,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     private final DisguiseManager disguiseManager;
     private final ConfigGUI configGUI;
 
+    private Minigame minigame;
+
     public MainCommand(BlockHuntPlugin plugin, DisguiseManager disguiseManager) {
         this.plugin = plugin;
         this.disguiseManager = disguiseManager;
@@ -47,6 +49,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 return handleResetConfig(sender);
             case "startgame":
                 return handleStartGame(sender);
+            case "stopgame":
+                return handleStopGame(sender);
             default:
                 sender.sendMessage("§cComando desconhecido. Uso: /" + label + " <wand|resetall|config>");
                 return false;
@@ -138,8 +142,23 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         }
 
         // Iniciar o minigame
-        Minigame minigame = new Minigame(this);
+        minigame = new Minigame(this);
         minigame.start();
+        return true;
+    }
+
+    private boolean handleStopGame(CommandSender sender) {
+        if (!sender.hasPermission("blockhunt.admin")) {
+            sender.sendMessage("§cVocê não tem permissão para usar este comando.");
+            return true;
+        }
+
+        if (minigame == null) {
+            sender.sendMessage("§cNenhum minigame está em andamento.");
+            return true;
+        }
+        minigame.stopMinigame();
+        minigame = null;
         return true;
     }
 
@@ -154,6 +173,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 subcommands.add("resetdisguise");
                 subcommands.add("config");
                 subcommands.add("resetconfig");
+                subcommands.add("startgame");
+                subcommands.add("stopgame");
             }
             return subcommands;
         } else if (args.length == 2 && args[0].equalsIgnoreCase("config")) {

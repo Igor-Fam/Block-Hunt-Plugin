@@ -30,6 +30,8 @@ public class Minigame {
     private final int tempoEsperaProcurador = 35;
     private final int tempoMinigame = 900;
 
+    BossBar bossBarAtiva;
+
     Minigame(MainCommand mainCommand){
         this.mainCommand = mainCommand;
     }
@@ -67,21 +69,12 @@ public class Minigame {
         }
 
         criaTempoEspera();
-
-        Bukkit.getScheduler().runTaskLater(
-            Bukkit.getPluginManager().getPlugin("BlockHuntPlugin"),
-            () -> {
-                for(Player p : procuradores) {
-                    p.teleport(spawnEscondedor);
-                }
-                criaTempoMinigame();
-            },
-            tempoEsperaProcurador * 20L
-        );
     }
 
     private void criaTempoEspera(){
         BossBar bossbar = Bukkit.createBossBar("Tempo para o Procurador começar a procurar: " + tempoEsperaProcurador + " segundos", BarColor.RED, BarStyle.SOLID);
+        bossBarAtiva = bossbar;
+        
         bossbar.setProgress(1.0);
         
         for (Player p : Bukkit.getOnlinePlayers()) {
@@ -96,9 +89,13 @@ public class Minigame {
                     bossbar.removeAll();
                     bossbar.setVisible(false);
                     Bukkit.getScheduler().cancelTask(taskId[0]);
+                    for(Player p : procuradores) {
+                        p.teleport(spawnEscondedor);
+                    }
+                    criaTempoMinigame();
                     return;
                 } else {
-                    bossbar.setTitle("Tempo para o Procurador começar a procurar: " + tempoRestante[0] + " segundos");
+                    bossbar.setTitle("Tempo para Esconder");
                     bossbar.setProgress((double) tempoRestante[0] / tempoEsperaProcurador);
                 }
                 tempoRestante[0]--;
@@ -108,6 +105,7 @@ public class Minigame {
 
     private void criaTempoMinigame(){
         BossBar bossbar = Bukkit.createBossBar("Tempo restante", BarColor.GREEN, BarStyle.SOLID);
+        bossBarAtiva = bossbar;
         bossbar.setProgress(1.0);
 
         for (Player p : Bukkit.getOnlinePlayers()) {
@@ -130,6 +128,17 @@ public class Minigame {
                 tempoRestante[0]--;
             },
         0, 20L).getTaskId();
+    }
+
+    public void stopMinigame(){
+        bossBarAtiva.removeAll();
+        bossBarAtiva.setVisible(false);
+        escondedores.clear();
+        procuradores.clear();
+        List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
+        for(Player p : onlinePlayers){
+            p.setGameMode(GameMode.SPECTATOR);
+        }
     }
 
     public Set<Player> getEscondedores() {
