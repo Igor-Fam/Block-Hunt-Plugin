@@ -4,10 +4,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Boss;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Team;
+
+import net.kyori.adventure.key.Keyed;
+
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.boss.*;
 
 import java.util.ArrayList;
@@ -17,11 +22,13 @@ import java.util.List;
 import java.util.Set;
 
 public class Minigame {
+    
+    private final BlockHuntPlugin plugin;
 
     private MainCommand mainCommand;
     private Set<Player> escondedores = new HashSet<>();
     private Set<Player> procuradores = new HashSet<>();
-
+    
     Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 
     private final Location spawnEscondedor = new Location(Bukkit.getWorld("world"), 219.0, 73, -580.0);
@@ -32,11 +39,20 @@ public class Minigame {
 
     BossBar bossBarAtiva;
 
-    Minigame(MainCommand mainCommand){
+    Minigame(MainCommand mainCommand, BlockHuntPlugin plugin) {
         this.mainCommand = mainCommand;
+        this.plugin = plugin;
     }
 
     public void start() {
+        //Limpa as barras anteriores
+        java.util.Iterator<KeyedBossBar> bossBarIterator = Bukkit.getBossBars();
+        while (bossBarIterator.hasNext()) {
+            KeyedBossBar bossBar = bossBarIterator.next();
+            bossBar.removeAll();      // Remove todos os jogadores da bossbar
+            bossBar.setVisible(false); // Opcional: esconde a bossbar
+        }
+
         List<Player> onlinePlayers = new ArrayList<>(Bukkit.getOnlinePlayers());
 
         for(Player p : onlinePlayers){
@@ -59,6 +75,7 @@ public class Minigame {
         procuradoresTeam.addEntry(procurador.getName());
         procurador.teleport(localEsperaProcurador);
         procurador.sendMessage("Você foi escolhido como Procurador!");
+        giveArmor(procurador);
 
         for(Player p : onlinePlayers){
             escondedores.add(p);
@@ -69,6 +86,22 @@ public class Minigame {
         }
 
         criaTempoEspera();
+    }
+
+    private void giveArmor(Player player){
+        // Exemplo de como dar uma armadura simples
+        // Você pode personalizar a armadura conforme necessário
+        ItemStack helmet = new ItemStack(Material.DIAMOND_HELMET);
+        ItemStack chestplate = new ItemStack(Material.DIAMOND_CHESTPLATE);
+        ItemStack leggings = new ItemStack(Material.DIAMOND_LEGGINGS);
+        ItemStack boots = new ItemStack(Material.DIAMOND_BOOTS);
+        ItemStack sword = new ItemStack(Material.DIAMOND_SWORD);
+
+        player.getInventory().setHelmet(helmet);
+        player.getInventory().setChestplate(chestplate);
+        player.getInventory().setLeggings(leggings);
+        player.getInventory().setBoots(boots);
+        player.getInventory().addItem(sword);
     }
 
     private void criaTempoEspera(){
@@ -83,7 +116,7 @@ public class Minigame {
         final int[] tempoRestante = {tempoEsperaProcurador};
         final int[] taskId = new int[1];
         taskId[0] = Bukkit.getScheduler().runTaskTimer(
-            Bukkit.getPluginManager().getPlugin("BlockHuntPlugin"), 
+            plugin, 
             () -> {
                 if (tempoRestante[0] <= 0) {
                     bossbar.removeAll();
@@ -114,7 +147,7 @@ public class Minigame {
         final int[] tempoRestante = {tempoMinigame};
         final int[] taskId = new int[1];
         taskId[0] = Bukkit.getScheduler().runTaskTimer(
-            Bukkit.getPluginManager().getPlugin("BlockHuntPlugin"), 
+            plugin, 
             () -> {
                 if (tempoRestante[0] <= 0) {
                     bossbar.removeAll();
@@ -122,7 +155,7 @@ public class Minigame {
                     Bukkit.getScheduler().cancelTask(taskId[0]);
                     return;
                 } else {
-                    bossbar.setTitle("Tempo restante: " + tempoRestante[0] + " segundos");
+                    bossbar.setTitle("Tempo restante");
                     bossbar.setProgress((double) tempoRestante[0] / tempoMinigame);
                 }
                 tempoRestante[0]--;

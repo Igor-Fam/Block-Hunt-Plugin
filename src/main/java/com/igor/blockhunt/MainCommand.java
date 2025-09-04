@@ -142,7 +142,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         }
 
         // Iniciar o minigame
-        minigame = new Minigame(this);
+        minigame = new Minigame(this, plugin);
         minigame.start();
         return true;
     }
@@ -159,6 +159,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         }
         minigame.stopMinigame();
         minigame = null;
+        disguiseManager.resetAll();
         return true;
     }
 
