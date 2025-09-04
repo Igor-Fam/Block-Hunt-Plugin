@@ -45,6 +45,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 return handleConfig(sender, args);
             case "resetconfig":
                 return handleResetConfig(sender);
+            case "startgame":
+                return handleStartGame(sender);
             default:
                 sender.sendMessage("§cComando desconhecido. Uso: /" + label + " <wand|resetall|config>");
                 return false;
@@ -57,17 +59,16 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         Player player = (Player) sender;
+        giveWand(player);
+        return true;
+    }
 
-        if (!player.hasPermission("blockhunt.givewand")) {
-            player.sendMessage("§cVocê não tem permissão para usar este comando.");
-            return true;
-        }
-
+    public void giveWand(Player player){
         String materialName = plugin.getConfig().getString("wand-item", "BLAZE_ROD");
         Material wandMaterial = Material.matchMaterial(materialName);
         if (wandMaterial == null) {
             player.sendMessage("§cMaterial do item inválido no config.yml!");
-            return true;
+            return;
         }
 
         ItemStack wand = new ItemStack(wandMaterial, 1);
@@ -85,8 +86,6 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         }
 
         player.getInventory().addItem(wand);
-        player.sendMessage("§aVocê recebeu a Varinha Block Hunt!");
-        return true;
     }
 
     private boolean handleResetAll(CommandSender sender) {
@@ -129,6 +128,18 @@ public class MainCommand implements CommandExecutor, TabCompleter {
 
         plugin.saveSelectableBlocks(defaultBlocks);
         sender.sendMessage("§aConfiguração de blocos restaurada para o padrão.");
+        return true;
+    }
+
+    private boolean handleStartGame(CommandSender sender) {
+        if (!sender.hasPermission("blockhunt.admin")) {
+            sender.sendMessage("§cVocê não tem permissão para usar este comando.");
+            return true;
+        }
+
+        // Iniciar o minigame
+        Minigame minigame = new Minigame(this);
+        minigame.start();
         return true;
     }
 
